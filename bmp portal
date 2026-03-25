@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMP Complaint Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Header -->
+<header>
+    <h1>BMP Public Complaint Dashboard</h1>
+</header>
+
+<!-- Complaint Form -->
+<section class="complaint-form">
+    <h2>Submit Complaint</h2>
+    <form id="complaintForm">
+        <input type="text" placeholder="Your Name" required>
+        <input type="text" placeholder="Phone Number" required>
+        <textarea placeholder="Your Complaint" required></textarea>
+        <button type="submit">Submit Complaint</button>
+    </form>
+</section>
+
+<!-- Dashboard Section -->
+<section class="dashboard">
+    <h2>Complaint Dashboard</h2>
+    <div class="stats">
+        <div class="total">Total: <span id="totalCount">0</span></div>
+        <div class="resolved">Resolved: <span id="resolvedCount">0</span></div>
+        <div class="pending">Pending: <span id="pendingCount">0</span></div>
+        <div class="fake">Fake: <span id="fakeCount">0</span></div>
+    </div>
+    <table id="complaintTable">
+        <thead>
+            <tr>
+                <th>Tracking ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Complaint</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
+let complaintForm = document.getElementById("complaintForm");
+let tableBody = document.querySelector("#complaintTable tbody");
+
+let complaints = JSON.parse(localStorage.getItem("complaints")) || [];
+
+function updateStats() {
+    let total = complaints.length;
+    let resolved = complaints.filter(c => c.status === "Resolved").length;
+    let pending = complaints.filter(c => c.status === "Pending").length;
+    let fake = complaints.filter(c => c.status === "Fake").length;
+    
+    document.getElementById("totalCount").textContent = total;
+    document.getElementById("resolvedCount").textContent = resolved;
+    document.getElementById("pendingCount").textContent = pending;
+    document.getElementById("fakeCount").textContent = fake;
+}
+
+function renderTable() {
+    tableBody.innerHTML = "";
+    complaints.forEach(c => {
+        let row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${c.phone}</td>
+            <td>${c.message}</td>
+            <td>${c.status}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function addComplaint(name, phone, message) {
+    let id = "BMP-" + (complaints.length + 1);
+    complaints.push({ id, name, phone, message, status: "Pending" });
+    localStorage.setItem("complaints", JSON.stringify(complaints));
+    updateStats();
+    renderTable();
+}
+
+complaintForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    let name = this.querySelector("input[placeholder='Your Name']").value;
+    let phone = this.querySelector("input[placeholder='Phone Number']").value;
+    let message = this.querySelector("textarea").value;
+    addComplaint(name, phone, message);
+    this.reset();
+});
+
+updateStats();
+renderTable();
+/* General */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(120deg, #c1f0f6, #f7c4f3);
+    text-align: center;
+}
+
+/* Header */
+header {
+    background-color: #004d99;
+    color: #fff;
+    padding: 20px;
+    font-size: 2em;
+    text-shadow: 1px 1px #000;
+}
+
+/* Complaint Form */
+.complaint-form {
+    background-color: #fff;
+    margin: 20px auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+.complaint-form input, .complaint-form textarea {
+    width: 90%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+.complaint-form button {
+    padding: 12px 20px;
+    background-color: #00b300;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 1em;
+}
+.complaint-form button:hover {
+    background-color: #009900;
+}
+
+/* Dashboard */
+.dashboard {
+    background-color: #fff0f5;
+    padding: 20px;
+    margin: 20px auto;
+    width: 95%;
+    max-width: 1000px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+/* Stats */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    font-weight: bold;
+    flex-wrap: wrap;
+}
+.stats div {
+    padding: 15px 20px;
+    border-radius: 10px;
+    color: white;
+    min-width: 120px;
+    margin: 5px;
+    font-size: 1.1em;
+}
+.stats .total { background-color: #0073e6; }
+.stats .resolved { background-color: #00b300; }
+.stats .pending { background-color: #ff9900; }
+.stats .fake { background-color: #e60000; }
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #004d99;
+}
+th {
+    background-color: #004d99;
+    color: white;
+    font-size: 1em;
+}
+td {
+    background-color: #cce6ff;
+    font-weight: bold;
+}
